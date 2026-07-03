@@ -6,7 +6,15 @@ import type {
   ExpensePage,
 } from "../types/expense";
 
-const API_ROOT = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+// Backend kök adresi şu öncelikle belirlenir:
+//   1. VITE_API_BASE_URL env değişkeni (varsa her şeyi ezer)
+//   2. Üretim build'i ise (Vercel) → canlı Railway backend'i
+//   3. Aksi halde (npm run dev) → yerel geliştirme sunucusu
+const PROD_API_ROOT = "https://springboot-production-7df8.up.railway.app";
+const DEV_API_ROOT = "http://localhost:8080";
+const API_ROOT =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.PROD ? PROD_API_ROOT : DEV_API_ROOT);
 const API_BASE_URL = `${API_ROOT}/api/expenses`;
 
 export class ApiError extends Error {
