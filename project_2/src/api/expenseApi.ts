@@ -6,7 +6,8 @@ import type {
   ExpensePage,
 } from "../types/expense";
 
-const API_BASE_URL = "http://localhost:8080/api/expenses";
+const API_ROOT = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+const API_BASE_URL = `${API_ROOT}/api/expenses`;
 
 export class ApiError extends Error {
   fieldErrors?: Record<string, string>;
