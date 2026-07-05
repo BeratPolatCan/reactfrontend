@@ -24,14 +24,13 @@ body {
 
 .app-shell {
   display: grid;
-  /* Orta sütun esnek (1fr) → mevcut genişliği kullanır; yan paneller daraltıldı
-     ve toplam genişlik artırıldı ki 7 sütunlu tablo (Düzenle/Sil dahil) yatay
-     kaydırma olmadan sığsın. */
-  grid-template-columns: 240px minmax(0, 1fr) 240px;
+  /* Orta sütun 7 sütunlu tabloyu (Düzenle/Sil dahil) kaydırmasız gösterecek
+     kadar geniş ama üst sınırlı (900px) — geniş ekranda gereksiz yere uzamaz. */
+  grid-template-columns: 240px minmax(0, 900px) 240px;
   gap: 24px;
   justify-content: center;
   align-items: start;
-  max-width: 1780px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 40px 24px 64px;
 }
