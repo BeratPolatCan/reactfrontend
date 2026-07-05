@@ -24,11 +24,14 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 300px minmax(0, 760px) 300px;
+  /* Orta sütun esnek (1fr) → mevcut genişliği kullanır; yan paneller daraltıldı
+     ve toplam genişlik artırıldı ki 7 sütunlu tablo (Düzenle/Sil dahil) yatay
+     kaydırma olmadan sığsın. */
+  grid-template-columns: 240px minmax(0, 1fr) 240px;
   gap: 24px;
   justify-content: center;
   align-items: start;
-  max-width: 1440px;
+  max-width: 1780px;
   margin: 0 auto;
   padding: 40px 24px 64px;
 }
@@ -43,9 +46,10 @@ body {
   margin-bottom: 20px;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1400px) {
   .app-shell {
-    grid-template-columns: minmax(0, 760px);
+    /* Tek sütun + tam genişlik: tablo bütün alanı kullanır, yan paneller alta iner. */
+    grid-template-columns: minmax(0, 1fr);
     justify-content: center;
   }
   .side {
@@ -240,7 +244,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 22px 14px;
+  padding: 18px 18px 14px;
 }
 .table-head h2 {
   font-size: 16px;
@@ -262,7 +266,7 @@ thead th {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-  padding: 11px 22px;
+  padding: 11px 14px;
   background: var(--surface-2);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -280,7 +284,7 @@ thead th.sortable:hover {
   color: var(--primary);
 }
 tbody td {
-  padding: 13px 22px;
+  padding: 13px 14px;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
 }
@@ -339,7 +343,7 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 14px 22px;
+  padding: 14px 18px;
   background: var(--surface-2);
   border-top: 1px solid var(--border);
 }
