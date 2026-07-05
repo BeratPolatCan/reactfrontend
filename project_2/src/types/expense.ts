@@ -13,6 +13,13 @@ export interface Expense {
   amount: number;
   date: string; // "yyyy-MM-dd" formatında (backend'in LocalDate'i JSON'da böyle görünür)
   category: Category;
+  // Backend'in otomatik doldurduğu denetim (audit) alanları. ISO zaman damgası
+  // (örn. "2026-07-05T14:34:00Z"). owner-scoped olduğu için *By alanları hep
+  // giriş yapan kullanıcıdır; UI'da sadece tarih+saat'leri gösteriyoruz.
+  createdBy?: string;
+  createdDate?: string;
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
 }
 
 export interface ExpenseInput {

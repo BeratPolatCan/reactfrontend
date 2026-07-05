@@ -3,7 +3,7 @@ import type { Expense, ExpensePage } from "../types/expense";
 import { getExpensesPage, deleteExpense } from "../api/expenseApi";
 import { expenseListStyles } from "./ExpenseListStyle";
 import { CATEGORY_LABELS } from "../constants/categories";
-import { formatTRY } from "../utils/format";
+import { formatTRY, formatDateTime } from "../utils/format";
 
 interface ExpenseListProps {
   refreshKey: number;
@@ -81,6 +81,7 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
           <h2>Giderler</h2>
           <span className="count">{totalElements} kayıt</span>
         </div>
+        <div className="table-scroll">
         <table>
           <thead>
             <tr>
@@ -92,6 +93,8 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
                 Tarih <span className="sort-arrow">{sortArrow("date")}</span>
               </th>
               <th>Kategori</th>
+              <th>Eklendi</th>
+              <th>Düzenlendi</th>
               <th className="cell-actions">İşlem</th>
             </tr>
           </thead>
@@ -108,6 +111,8 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
                     {CATEGORY_LABELS[expense.category]}
                   </span>
                 </td>
+                <td className="audit-cell">{formatDateTime(expense.createdDate)}</td>
+                <td className="audit-cell">{formatDateTime(expense.lastModifiedDate)}</td>
                 <td className="cell-actions">
                   <span className="row-actions">
                     <button className="btn btn-ghost btn-sm" onClick={() => onEdit(expense)}>
@@ -125,13 +130,14 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
             ))}
             {content.length === 0 && (
               <tr>
-                <td colSpan={5} className="muted" style={{ textAlign: "center" }}>
+                <td colSpan={7} className="muted" style={{ textAlign: "center" }}>
                   Kayıt yok.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
 
         <div className="expense-table-pagination">
           <div className="pagination-group">
