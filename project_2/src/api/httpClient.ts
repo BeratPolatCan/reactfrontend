@@ -37,10 +37,11 @@ export async function handleResponse<T>(response: Response): Promise<T> {
     }
     throw new ApiError(body?.message ?? `İstek başarısız: ${response.status}`, response.status);
   }
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return response.json() as Promise<T>;
+  // Başarılı ama gövdesiz olabilecek yanıtları güvenle ele al: 204 (No Content)
+  // ve register gibi 201'de gövde yoktur. Boş gövdede response.json() "Unexpected
+  // end of JSON input" hatası verir; o yüzden önce metni okuyup doluysa parse ediyoruz.
+  const text = await response.text();
+  return (text ? (JSON.parse(text) as T) : (undefined as T));
 }
 
 // İsteği, geçerli access token'ı başlığa ekleyerek gönderir.
