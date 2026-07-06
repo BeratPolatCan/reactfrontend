@@ -34,6 +34,9 @@ function AuthPage() {
     } catch (err) {
       if (err instanceof ApiError && err.fieldErrors) {
         setFieldErrors(err.fieldErrors);
+      } else if (isLogin && err instanceof ApiError && err.status === 401) {
+        // Backend "Bad credentials" döndürür; kullanıcıya daha anlaşılır mesaj göster.
+        setError("Kullanıcı adı veya şifre hatalı");
       } else {
         setError((err as Error).message);
       }

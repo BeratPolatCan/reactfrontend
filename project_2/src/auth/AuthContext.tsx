@@ -17,7 +17,7 @@ import {
   login as loginApi,
   register as registerApi,
   logout as logoutApi,
-} from "../api/authApi";
+} from "../api/authApi";  
 import type { Credentials } from "../types/auth";
 
 interface AuthContextValue {
