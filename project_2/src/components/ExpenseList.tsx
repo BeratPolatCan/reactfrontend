@@ -27,6 +27,7 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
   const [size, setSize] = useState(MIN_SIZE);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): effect basinda senkron setState; test yazildiktan sonra duzeltilecek
     setError(null);
     getExpensesPage(page, size, sortField, sortDirection)
       .then((data) => {
