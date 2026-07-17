@@ -20,6 +20,7 @@ function ExpenseForm({ editingExpense, onSaved, onCancelEdit, onRefreshNeeded }:
 
   useEffect(() => {
     if (editingExpense) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): props->state senkronu; test yazildiktan sonra key-reset desenine cevrilecek
       setDescription(editingExpense.description);
       setAmount(String(editingExpense.amount));
       setDate(editingExpense.date);

@@ -1,0 +1,54 @@
+name: Frontend CI
+
+# DIKKAT: Bu repoda trunk branch adi "SonarMain" (buyuk S).
+# Backend reposunda ise "sonarMain" (kucuk s). Ikisi ayri repo oldugu icin
+# sorun degil, ama buradaki adi degistirirsen workflow sessizce hic tetiklenmez.
+#
+# NOT: Bilerek "paths" filtresi KULLANILMIYOR. Bir check "required" yapildiginda
+# ve paths filtresi yuzunden hic tetiklenmezse, GitHub o PR'i sonsuza kadar
+# "Expected - Waiting for status" durumunda bekletir ve merge kilitlenir.
+on:
+  push:
+    branches: [SonarMain]
+  pull_request:
+    branches: [SonarMain]
+
+jobs:
+  # Bu job adi ("lint-and-build") branch protection'da required check olarak
+  # secilecek. Degistirirsen korumayi da guncellemen gerekir.
+  lint-and-build:
+    name: Lint & Build (Node 24)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        # Vite projesi repo kokunde degil, bu alt dizinde.
+        working-directory: project_2
+
+    steps:
+      - name: Kodu cek
+        uses: actions/checkout@v4
+
+      # package.json'da "engines" alani yok; gelistirme makinesindeki surumle
+      # ayni tutuluyor ki "yerelde calisiyordu" farki olusmasin.
+      - name: Node 24 kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          # setup-node package-lock.json'i varsayilan olarak repo kokunde arar;
+          # bizimki alt dizinde oldugu icin yolu acikca vermek zorunlu.
+          cache-dependency-path: project_2/package-lock.json
+
+      # "npm install" degil "npm ci": package-lock.json'a birebir sadik kalir,
+      # lock dosyasini degistirmez ve CI'da tekrarlanabilir kurulum saglar.
+      - name: Bagimliliklari kur
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # "build" scripti "tsc -b && vite build" -> typecheck bu adima dahil,
+      # ayrica bir typecheck adimina gerek yok.
+      - name: Derle (typecheck dahil)
+        run: npm run build

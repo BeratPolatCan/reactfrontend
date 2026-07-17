@@ -30,6 +30,7 @@ function DateRangeFilter({ refreshKey }: DateRangeFilterProps) {
 
   useEffect(() => {
     if (!startDate || !endDate) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): fetchRange iceride setState cagiriyor; test yazildiktan sonra duzeltilecek
     fetchRange(startDate, endDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sadece refreshKey değiştiğinde tazelemek istiyoruz
   }, [refreshKey]);
