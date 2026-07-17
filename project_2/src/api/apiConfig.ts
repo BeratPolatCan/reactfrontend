@@ -15,6 +15,7 @@ const DEFAULT_API_ROOT = "http://localhost:8080";
 // altına alıp (yoksa https:// ekle) sondaki fazlalık /'ları temizliyoruz.
 function normalizeApiRoot(raw: string): string {
   const trimmed = raw.trim().replace(/\/+$/, "");
+  
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
