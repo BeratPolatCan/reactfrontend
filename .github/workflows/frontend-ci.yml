@@ -28,6 +28,12 @@ jobs:
     steps:
       - name: Kodu cek
         uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 -> TUM git gecmisi. Varsayilan (1) sig klondur ve
+          # Sonar blame bilgisini okuyamaz; o zaman bir satirin NE ZAMAN ve KIM
+          # tarafindan yazildigini bilemez, yani "yeni kod" ayrimini yapamaz.
+          # Clean as You Code tam olarak bu ayrima dayaniyor.
+          fetch-depth: 0
 
       # package.json'da "engines" alani yok; gelistirme makinesindeki surumle
       # ayni tutuluyor ki "yerelde calisiyordu" farki olusmasin.
@@ -60,8 +66,22 @@ jobs:
       - name: Derle (typecheck dahil)
         run: npm run build
 
-      # Asama 4'te SonarCloud coverage'i kendi arayuzunde gosterecek; o zamana
-      # kadar raporu CI'dan indirebilmek icin.
+      # Onceki test:coverage adiminda uretilen coverage/lcov.info'yu okuyup
+      # SonarQube Cloud'a gonderir; bu yuzden testlerden SONRA gelmek zorunda.
+      # Ayarlar project_2/sonar-project.properties dosyasinda.
+      #
+      # NOT: "defaults.run.working-directory" yalnizca "run:" adimlarini etkiler,
+      # "uses:" adimlarini ETKILEMEZ. O yuzden projectBaseDir'i acikca veriyoruz;
+      # verilmezse tarayici repo kokunde calisir ve hicbir kaynak dosya bulamaz.
+      - name: SonarQube Cloud analizi
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: project_2
+
+      # Coverage'i artik SonarQube Cloud gosteriyor; bu artifact yine de duruyor
+      # ki Sonar'a gitmeden raporu indirebilelim.
       - name: Coverage raporunu yukle
         if: always()
         uses: actions/upload-artifact@v4
