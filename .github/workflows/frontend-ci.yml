@@ -48,7 +48,24 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # "test" scripti "vitest run" (duz "vitest" DEGIL): duz hali watch modunda
+      # acilir ve CI'da sonsuza kadar asili kalirdi.
+      # test:coverage hem testleri kosar hem Asama 4'te SonarCloud'un okuyacagi
+      # coverage/lcov.info dosyasini uretir.
+      - name: Test + coverage
+        run: npm run test:coverage
+
       # "build" scripti "tsc -b && vite build" -> typecheck bu adima dahil,
       # ayrica bir typecheck adimina gerek yok.
       - name: Derle (typecheck dahil)
         run: npm run build
+
+      # Asama 4'te SonarCloud coverage'i kendi arayuzunde gosterecek; o zamana
+      # kadar raporu CI'dan indirebilmek icin.
+      - name: Coverage raporunu yukle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: project_2/coverage/
+          if-no-files-found: ignore

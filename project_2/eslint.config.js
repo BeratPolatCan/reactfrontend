@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // coverage: vitest'in urettigi rapor klasoru. Icinde lint'lenecek bizim kodumuz
+  // yok; taranirsa uretilmis lcov-report scriptleri hakkinda uyari uretir.
+  globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

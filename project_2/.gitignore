@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Test coverage raporlari (her calistirmada yeniden uretilir).
+coverage
+
 # Env dosyalari: ornek disinda hicbiri commitlenmez.
 .env
 .env.*
