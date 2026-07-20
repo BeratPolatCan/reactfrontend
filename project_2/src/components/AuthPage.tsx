@@ -59,9 +59,12 @@ function AuthPage() {
           {isLogin ? "Hesabına giriş yap" : "Yeni bir hesap oluştur"}
         </p>
 
+        {/* label htmlFor <-> input id: olmadan ekran okuyucu alan adini okuyamaz
+            ve etikete tiklamak input'a odaklanmaz. */}
         <div className="field">
-          <label>Kullanıcı adı</label>
+          <label htmlFor="auth-username">Kullanıcı adı</label>
           <input
+            id="auth-username"
             type="text"
             autoComplete="username"
             value={username}
@@ -71,8 +74,9 @@ function AuthPage() {
         </div>
 
         <div className="field">
-          <label>Şifre</label>
+          <label htmlFor="auth-password">Şifre</label>
           <input
+            id="auth-password"
             type="password"
             autoComplete={isLogin ? "current-password" : "new-password"}
             value={password}
@@ -94,9 +98,18 @@ function AuthPage() {
           </button>
         </p>
 
-        {isLogin && (
+        {/* Demo hesap ipucu artik SABIT DEGIL, ortamdan geliyor.
+            Onceden "demo / demo1234" ekranda yaziliydi; repo public oldugu icin
+            calisan bir parolayi ilan etmek demekti (ayni sabit backend'de
+            DataSeeder'da da vardi ve Sonar tarafindan BLOCKER isaretlenmisti).
+            Ustelik backend'de demo hesabi artik yalnizca DEMO_PASSWORD tanimliysa
+            olusuyor -- yani sabit ipucu cogu zaman YANLIS bilgi veriyordu.
+
+            Yerelde gostermek istersen .env'e ekle:
+              VITE_DEMO_HINT=demo / senin-yerel-parolan */}
+        {isLogin && import.meta.env.VITE_DEMO_HINT && (
           <p className="auth-hint">
-            Demo hesap: <strong>demo</strong> / <strong>demo1234</strong>
+            Demo hesap: <strong>{import.meta.env.VITE_DEMO_HINT}</strong>
           </p>
         )}
       </form>
