@@ -11,6 +11,8 @@ export default defineConfig({
     // jsdom sart: tokenStore localStorage, httpClient ise window.dispatchEvent
     // kullaniyor. Saf Node ortaminda ikisi de tanimsiz olurdu.
     environment: 'jsdom',
+    // jest-dom eslestiricilerini yukler + her testten sonra DOM'u temizler.
+    setupFiles: ['./src/test-setup.ts'],
     coverage: {
       provider: 'v8',
       // lcov -> SonarCloud'un Asama 4'te okuyacagi format (coverage/lcov.info).

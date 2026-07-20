@@ -64,9 +64,13 @@ function ExpenseForm({ editingExpense, onSaved, onCancelEdit, onRefreshNeeded }:
     <form className="card" onSubmit={handleSubmit}>
       <h2 className="card-title">{editingExpense ? "Gideri Düzenle" : "Yeni Gider Ekle"}</h2>
       <div className="form-row">
+        {/* label htmlFor <-> input id baglantisi erisilebilirlik icin sart:
+            olmadan ekran okuyucu alanin adini okuyamaz ve etikete tiklamak
+            input'a odaklanmaz. */}
         <div className="field field-desc">
-          <label>Açıklama</label>
+          <label htmlFor="expense-description">Açıklama</label>
           <input
+            id="expense-description"
             type="text"
             placeholder="Örn. Market alışverişi"
             value={description}
@@ -75,8 +79,9 @@ function ExpenseForm({ editingExpense, onSaved, onCancelEdit, onRefreshNeeded }:
           {fieldErrors.description && <span className="field-error">{fieldErrors.description}</span>}
         </div>
         <div className="field">
-          <label>Tutar</label>
+          <label htmlFor="expense-amount">Tutar</label>
           <input
+            id="expense-amount"
             type="number"
             step="0.01"
             placeholder="0.00"
@@ -86,13 +91,22 @@ function ExpenseForm({ editingExpense, onSaved, onCancelEdit, onRefreshNeeded }:
           {fieldErrors.amount && <span className="field-error">{fieldErrors.amount}</span>}
         </div>
         <div className="field">
-          <label>Tarih</label>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <label htmlFor="expense-date">Tarih</label>
+          <input
+            id="expense-date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
           {fieldErrors.date && <span className="field-error">{fieldErrors.date}</span>}
         </div>
         <div className="field">
-          <label>Kategori</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+          <label htmlFor="expense-category">Kategori</label>
+          <select
+            id="expense-category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+          >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
             ))}

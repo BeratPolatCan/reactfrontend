@@ -1,0 +1,107 @@
+name: Frontend Deploy
+
+# ==============================================================================
+# DIKKAT: Bu workflow SADECE ELLE tetiklenir (workflow_dispatch).
+#
+# Otomatik (push) tetikleyici BILEREK kapali: Vercel hesabi ve VERCEL_TOKEN
+# secret'i henuz yok. Otomatik olsaydi SonarMain'e her merge'de bu job kirmizi
+# olur ve trunk'in yesil gecmisi bozulurdu.
+#
+# GERCEKTEN DEPLOY ETMEK ISTEDIGINDE:
+#   1. Vercel projesi olustur; VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+#      secret'larini ekle
+#   2. Vercel'in GitHub entegrasyonunda OTOMATIK DEPLOY'U KAPAT  <-- kritik
+#   3. PROD_API_URL degiskenini (repo variables) backend adresine ayarla
+#   4. "production" environment'i olustur + required reviewer ekle
+#   5. on: blogunu push/workflow_run'a cevir
+# ==============================================================================
+on:
+  workflow_dispatch:
+    inputs:
+      onay:
+        description: 'Deploy etmek icin "deploy" yaz'
+        required: true
+        default: ''
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    if: github.event.inputs.onay == 'deploy'
+
+    defaults:
+      run:
+        working-directory: project_2
+
+    environment:
+      name: production
+      url: ${{ vars.PROD_SITE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: project_2/package-lock.json
+
+      - run: npm ci
+
+      # =======================================================================
+      # KRITIK FARK -- BACKEND'IN TERSI:
+      #
+      # Backend'de CI'in urettigi jar'i INDIRIP deploy ediyoruz, cunku Spring
+      # yapilandirmayi CALISMA ZAMANINDA ortamdan okur -> tek jar her ortama gider.
+      #
+      # Burada bunu YAPAMAYIZ. Vite, VITE_* degiskenlerini derleme aninda
+      # paketin ICINE yazar. CI'daki build VITE_API_BASE_URL olmadan calisti,
+      # yani o dist "http://localhost:8080"e bakiyor -- production'da iseyaramaz.
+      #
+      # Bu yuzden burada BASTAN build ediyoruz, production degiskeniyle.
+      # Sonucu: her ortam icin ayri build sart.
+      # =======================================================================
+      - name: Production build
+        env:
+          VITE_API_BASE_URL: ${{ vars.PROD_API_URL }}
+        run: npm run build
+
+      # Deploy edilen paketin gercekten production backend'ine baktigini
+      # dogrula. Degisken unutulursa build sessizce localhost'a bakar ve
+      # hata ancak kullanici sitede beyaz ekran gorunce anlasilir.
+      - name: Build'e dogru API adresi gomuldu mu?
+        run: |
+          if grep -rq "localhost:8080" dist/assets/*.js; then
+            echo "HATA: Paket icinde localhost:8080 var."
+            echo "VITE_API_BASE_URL degiskeni build'e gecmemis."
+            exit 1
+          fi
+          echo "OK: paket yerel adrese bakmiyor."
+
+      - name: Vercel CLI kur
+        run: npm install -g vercel
+
+      - name: Deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        # --prebuilt kullanmiyoruz; yukarida kendi build'imizi yaptik ve
+        # dist/ klasorunu dogrudan yayinliyoruz.
+        run: vercel deploy dist --prod --yes --token="$VERCEL_TOKEN"
+
+      - name: Smoke test (site aciliyor mu?)
+        run: |
+          for i in $(seq 1 10); do
+            kod=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.PROD_SITE_URL }}" || echo "000")
+            if [ "$kod" = "200" ]; then echo "Site AYAKTA"; exit 0; fi
+            echo "  deneme $i: HTTP $kod"
+            sleep 6
+          done
+          echo "HATA: Site acilmadi."
+          exit 1
+
+      # HATIRLATMA: Frontend deploy edildikten sonra backend'in CORS ayarinda
+      # bu adresin bulunmasi gerekir, yoksa tarayici tum istekleri bloklar:
+      #   Railway -> Variables -> CORS_ALLOWED_ORIGINS=https://<site-adresi>
+      # (Eskiden bu adres CorsConfig.java'ya GOMULUYDU; artik env'den geliyor.)
