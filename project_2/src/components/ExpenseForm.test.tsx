@@ -122,6 +122,52 @@ describe('ExpenseForm - duzenleme modu', () => {
   })
 })
 
+describe('ExpenseForm - key ile remount sozlesmesi', () => {
+  // ExpenseForm alanlari props'tan ILKLENDIRIYOR ve onlari senkronda tutan bir
+  // useEffect'i YOK (props->state senkronu bilerek kaldirildi). Bu tasarim
+  // App.tsx'in <ExpenseForm key={editingExpense?.id ?? "new"} ...> vermesine
+  // BAGLI. Asagidaki iki test o bagimliligi belgeliyor: biri key'in dogru
+  // davranisini, digeri key OLMAZSA olusacak hatayi gosteriyor.
+  const digerGider: Expense = {
+    id: 99,
+    description: 'Kitap',
+    amount: 220,
+    date: '2026-06-01',
+    category: 'OTHER',
+  }
+
+  const ortak = {
+    onSaved: vi.fn(),
+    onCancelEdit: vi.fn(),
+    onRefreshNeeded: vi.fn(),
+  }
+
+  it('key degisince alanlar YENI kaydin degerleriyle dolar', () => {
+    const { rerender } = render(
+      <ExpenseForm key={mevcutGider.id} editingExpense={mevcutGider} {...ortak} />,
+    )
+    expect(screen.getByLabelText('Açıklama')).toHaveValue('Market alisverisi')
+
+    // App.tsx baska bir kaydi duzenlemeye gecirdiginde olan sey:
+    rerender(<ExpenseForm key={digerGider.id} editingExpense={digerGider} {...ortak} />)
+
+    expect(screen.getByLabelText('Açıklama')).toHaveValue('Kitap')
+    expect(screen.getByLabelText('Tutar')).toHaveValue(220)
+  })
+
+  it('key SABIT kalirsa alanlar eski kayitta takili kalir (key neden zorunlu)', () => {
+    const { rerender } = render(
+      <ExpenseForm key="sabit" editingExpense={mevcutGider} {...ortak} />,
+    )
+    rerender(<ExpenseForm key="sabit" editingExpense={digerGider} {...ortak} />)
+
+    // Bilincli olarak "yanlis" davranisi dogruluyoruz: React bileseni yeniden
+    // KURMADIGI icin useState ilklendiricileri tekrar calismaz. App.tsx'teki
+    // key silinirse kullanici bu hatayi gorur.
+    expect(screen.getByLabelText('Açıklama')).toHaveValue('Market alisverisi')
+  })
+})
+
 describe('ExpenseForm - hata yollari', () => {
   it('backend alan hatalarini ilgili alanin altinda gosterir', async () => {
     const kullanici = userEvent.setup()

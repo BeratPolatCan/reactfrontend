@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Category, Expense, ExpenseInput } from "../types/expense";
 import { ApiError, createExpense, updateExpense } from "../api/expenseApi";
 import { CATEGORIES, CATEGORY_LABELS } from "../constants/categories";
@@ -11,22 +11,21 @@ interface ExpenseFormProps {
 }
 
 function ExpenseForm({ editingExpense, onSaved, onCancelEdit, onRefreshNeeded }: ExpenseFormProps) {
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
-  const [category, setCategory] = useState<Category>("FOOD");
+  // Alanlar props'tan DOGRUDAN ilklendiriliyor; props'u state'e kopyalayan bir
+  // useEffect YOK. Duzenlenen kayit degistiginde formun tazelenmesini App.tsx'teki
+  // "key" saglar: key degisince React bu bileseni unmount/remount eder ve
+  // asagidaki ilklendiriciler yeniden calisir.
+  //
+  // Onceki hali effect icinde setState cagiriyordu (react-hooks/set-state-in-effect):
+  // fazladan render turu ureten ve React'in onermedigi props->state senkronu.
+  // ONEMLI: Bu desen App.tsx'teki key= olmadan CALISMAZ -- bagimlilik
+  // ExpenseForm.test.tsx'te "key ile remount" testiyle korunuyor.
+  const [description, setDescription] = useState(editingExpense?.description ?? "");
+  const [amount, setAmount] = useState(editingExpense ? String(editingExpense.amount) : "");
+  const [date, setDate] = useState(editingExpense?.date ?? "");
+  const [category, setCategory] = useState<Category>(editingExpense?.category ?? "FOOD");
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (editingExpense) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): props->state senkronu; test yazildiktan sonra key-reset desenine cevrilecek
-      setDescription(editingExpense.description);
-      setAmount(String(editingExpense.amount));
-      setDate(editingExpense.date);
-      setCategory(editingExpense.category);
-    }
-  }, [editingExpense]);
 
   function resetForm() {
     setDescription("");

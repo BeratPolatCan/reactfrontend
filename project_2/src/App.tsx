@@ -46,7 +46,13 @@ function App() {
       </aside>
 
       <main className="main-col">
+        {/* key ZORUNLU: ExpenseForm alanlarini props'tan ilklendiriyor ve onlari
+            senkronda tutan bir useEffect'i YOK. Duzenlenecek kayit degisince
+            key de degisir, React bileseni bastan kurar ve alanlar yeni kaydin
+            degerleriyle dolar. key kaldirilirsa form eski kaydin verisinde takili
+            kalir. */}
         <ExpenseForm
+          key={editingExpense?.id ?? "new"}
           editingExpense={editingExpense}
           onSaved={handleSaved}
           onCancelEdit={() => setEditingExpense(null)}
