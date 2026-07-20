@@ -14,9 +14,13 @@ function DateRangeFilter({ refreshKey }: DateRangeFilterProps) {
   const [error, setError] = useState<string | null>(null);
 
   async function fetchRange(start: string, end: string) {
-    setError(null);
+    // setError(null) bilerek EN BASTA degil: bu fonksiyon asagidaki effect'ten
+    // de cagriliyor ve senkron bir setState effect govdesinde
+    // react-hooks/set-state-in-effect kuralini ihlal ederdi (fazladan render).
+    // Hatayi sonuc gelince temizliyoruz.
     try {
       const data = await getExpensesByRange(start, end);
+      setError(null);
       setResults(data);
     } catch (err) {
       setError((err as Error).message);
@@ -30,8 +34,16 @@ function DateRangeFilter({ refreshKey }: DateRangeFilterProps) {
 
   useEffect(() => {
     if (!startDate || !endDate) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): fetchRange iceride setState cagiriyor; test yazildiktan sonra duzeltilecek
-    fetchRange(startDate, endDate);
+    // fetchRange'i BURADAN cagirmiyoruz: kural fonksiyon sinirinin otesini
+    // goremedigi icin, icindeki setState'ler await'ten sonra olsa bile cagriyi
+    // "effect'te senkron setState" sayip isaretliyordu. Promise zincirini
+    // dogrudan kurunca async sinir acik hale geliyor.
+    getExpensesByRange(startDate, endDate)
+      .then((data) => {
+        setError(null);
+        setResults(data);
+      })
+      .catch((err: Error) => setError(err.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sadece refreshKey değiştiğinde tazelemek istiyoruz
   }, [refreshKey]);
 
@@ -39,13 +51,27 @@ function DateRangeFilter({ refreshKey }: DateRangeFilterProps) {
     <div className="card">
       <h2 className="card-title">Tarih Aralığı</h2>
       <form className="filter-form" onSubmit={handleFilter}>
+        {/* label htmlFor <-> input id: olmadan ekran okuyucu alan adini okuyamaz
+            ve etikete tiklamak input'a odaklanmaz. */}
         <div className="field">
-          <label>Başlangıç</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+          <label htmlFor="range-start">Başlangıç</label>
+          <input
+            id="range-start"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            required
+          />
         </div>
         <div className="field">
-          <label>Bitiş</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+          <label htmlFor="range-end">Bitiş</label>
+          <input
+            id="range-end"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            required
+          />
         </div>
         <button className="btn btn-primary" type="submit">Filtrele</button>
       </form>

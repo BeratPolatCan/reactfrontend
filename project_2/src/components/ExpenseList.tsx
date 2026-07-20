@@ -27,10 +27,12 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
   const [size, setSize] = useState(MIN_SIZE);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- TODO(Asama 3): effect basinda senkron setState; test yazildiktan sonra duzeltilecek
-    setError(null);
+    // Effect'in govdesinde SENKRON setState yok: eskiden burada setError(null)
+    // vardi ve react-hooks/set-state-in-effect kuralini ihlal ediyordu
+    // (fazladan bir render turu). Hata artik sonucun geldigi yerde temizleniyor.
     getExpensesPage(page, size, sortField, sortDirection)
       .then((data) => {
+        setError(null);
         // Bir sayfa silme sonrası mevcut sayfa aralık dışı kalırsa geri çek.
         if (data.totalPages > 0 && page >= data.totalPages) {
           setPage(data.totalPages - 1);
@@ -69,6 +71,11 @@ function ExpenseList({ refreshKey, onEdit, onChanged }: ExpenseListProps) {
 
   if (!pageData) {
     if (loading) return <p className="muted">Yükleniyor...</p>;
+    // HATA DUZELTMESI: ilk yukleme patladiginda pageData null kalir ve eskiden
+    // burada null donuluyordu -- yani asagidaki {error && ...} bloguna hic
+    // ulasilmiyor, kullanici bos bir alan goruyordu. Hata state'te vardi ama
+    // ekranda yoktu.
+    if (error) return <p className="error">{error}</p>;
     return null;
   }
 
